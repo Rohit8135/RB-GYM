@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Workout</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(160deg, #000000, #1a1a1a);
+            color: white;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            background: #111;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 0 40px rgba(255, 204, 0, 0.3);
+            animation: fadeUp 0.6s ease;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            text-align: center;
+            color: #ffcc00;
+            margin-bottom: 25px;
+        }
+
+        label {
+            font-size: 14px;
+            margin-bottom: 5px;
+            display: block;
+            color: #ddd;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 18px;
+            border-radius: 12px;
+            border: none;
+            font-size: 15px;
+            background: #222;
+            color: white;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            box-shadow: 0 0 10px #ffcc00;
+        }
+
+        .set-box {
+            background: #1c1c1c;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            border-radius: 15px;
+            border: none;
+            background: linear-gradient(45deg, #ffcc00, #ffaa00);
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        /* Bottom Popup */
+        .popup {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffcc00;
+            color: black;
+            padding: 15px 25px;
+            border-radius: 30px;
+            font-weight: bold;
+            box-shadow: 0 5px 20px rgba(255,204,0,0.6);
+            transition: bottom 0.5s ease;
+            z-index: 999;
+        }
+
+        .popup.show {
+            bottom: 30px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <div style="text-align:right; margin-bottom:10px;">
+    <a href="/history" style="color:#ffcc00; text-decoration:none; font-size:14px;">
+        View History →
+    </a>
+</div>
+    <h2>Add Workout</h2>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div id="popup" class="popup">
+                {{ messages[0] }}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="/save">
+
+        <label>Date</label>
+        <input type="date" name="date" required>
+
+        <label>Muscle</label>
+        <select name="muscle_id" id="muscleSelect" required>
+            <option value="">Select Muscle</option>
+            {% for muscle in muscles %}
+                <option value="{{ muscle.id }}">{{ muscle.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Exercise</label>
+        <select name="exercise_id" id="exerciseSelect" required>
+            <option value="">Select Exercise</option>
+        </select>
+
+        <label>Number of Sets</label>
+        <select id="setCount" onchange="generateSets()" required>
+            <option value="">Select Sets</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+
+        <div id="setsContainer"></div>
+
+        <button type="submit">Save Workout</button>
+
+    </form>
+
+</div>
+
+
+<script>
+document.getElementById("muscleSelect").addEventListener("change", function() {
+
+    let muscleId = this.value;
+    let exerciseDropdown = document.getElementById("exerciseSelect");
+
+    exerciseDropdown.innerHTML = '<option>Loading...</option>';
+
+    fetch("/exercises/" + muscleId)
+        .then(response => response.json())
+        .then(data => {
+
+            exerciseDropdown.innerHTML = '<option value="">Select Exercise</option>';
+
+            data.forEach(function(exercise) {
+                let option = document.createElement("option");
+                option.value = exercise.id;
+                option.text = exercise.name;
+                exerciseDropdown.appendChild(option);
+            });
+        });
+});
+
+
+function generateSets() {
+
+    let count = document.getElementById("setCount").value;
+    let container = document.getElementById("setsContainer");
+
+    container.innerHTML = "";
+
+    for (let i = 1; i <= count; i++) {
+
+        container.innerHTML += `
+            <div class="set-box">
+                <strong>Set ${i}</strong><br><br>
+                Reps:
+                <input type="number" name="reps[]" required>
+                Weight:
+                <input type="number" step="0.1" name="weight[]" required>
+            </div>
+        `;
+    }
+}
+
+
+window.onload = function() {
+    let popup = document.getElementById("popup");
+
+    if (popup) {
+        setTimeout(() => {
+            popup.classList.add("show");
+        }, 200);
+
+        setTimeout(() => {
+            popup.classList.remove("show");
+        }, 3500);
+    }
+};
+</script>
+
+</body>
+</html>

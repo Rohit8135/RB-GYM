@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Workout History</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(160deg, #000000, #1a1a1a);
+            color: white;
+            padding: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #ffcc00;
+            margin-bottom: 20px;
+        }
+
+        .workout-card {
+            background: #111;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 0 20px rgba(255,204,0,0.2);
+        }
+
+        .title {
+            font-weight: bold;
+            color: #ffcc00;
+            margin-bottom: 5px;
+        }
+
+        .sets {
+            background: #1c1c1c;
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 8px;
+        }
+
+        .set-line {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .back-btn {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            padding: 12px;
+            background: linear-gradient(45deg, #ffcc00, #ffaa00);
+            color: black;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>Workout History</h2>
+
+{% if history %}
+    {% for date, workouts in history.items() %}
+        <div class="workout-card">
+
+            <div class="title">
+                📅 {{ date }}
+            </div>
+
+            {% for workout in workouts %}
+                <div style="margin-top:10px;">
+                    <strong>{{ workout.muscle }}</strong> - {{ workout.exercise }}
+
+                    <div class="sets">
+                        {% for set in workout.sets %}
+                            <div class="set-line">
+                                Set {{ set.set_number }}:
+                                {{ set.reps }} reps × {{ set.weight }} kg
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+
+        </div>
+    {% endfor %}
+{% else %}
+    <p>No workouts found.</p>
+{% endif %}
+
+<a href="/" class="back-btn">← Back to Add Workout</a>
+
+</body>
+</html>
